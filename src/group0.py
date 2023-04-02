@@ -113,7 +113,6 @@ def sort_data(data) -> List[Tuple[str, float]]:
         return arr
     
     for k in all_keys:
-        #sorted_data.append(k)
         raw = {int(elem[0]):float(elem[1]) for elem in all_data[k]}
         sorted_days = mergeSort(list(raw.keys()))
         for day in sorted_days:
