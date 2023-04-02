@@ -28,11 +28,11 @@ Executing transaction: done
 #
 # To activate this environment, use
 #
-#     $ conda activate cryptos
+#     $ source activate cryptos
 #
 # To deactivate an active environment, use
 #
-#     $ conda deactivate
+#     $ source deactivate
 ```
 To activate the environment, follow these steps:
 ```console
