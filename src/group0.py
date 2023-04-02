@@ -12,9 +12,18 @@ def read_file(file_path: str) -> any:
     
     @return: A data structure contining the information of the crypto
     """
-
-    # TODO: Implement here your solution
-    return None
+    
+    with open(file_path, "r") as file:
+        dictionary = dict()
+        for line in file.readlines():
+            line.split(",")
+            element = line.rstrip().split(',')
+            if element[0] in dictionary:
+                dictionary[element[0]].append(element[1:])
+            else:
+                dictionary[element[0]]=[element[1:]]
+        return dictionary
+    
 
 def crypto_stats(data, crypto_name: str, interval: Tuple[int, int]) -> Tuple[float, float, float]:
     """
@@ -32,8 +41,22 @@ def crypto_stats(data, crypto_name: str, interval: Tuple[int, int]) -> Tuple[flo
     
     @return: A tuple that contains the minimum, average, and maximum price values
     """
-    # TODO: Implement here your solution
-    return (None, None, None)
+    all_data = read_file(data)
+    filtered_data = []
+
+    try:
+        for values in all_data[crypto_name]:
+            if float(values[0]) >= interval[0] and float(values[0]) <= interval[1]:
+                filtered_data.append(float(values[1]))
+
+        minimum = min(filtered_data)
+        maximum = max(filtered_data)
+        average = sum(filtered_data) / len(filtered_data)
+        
+        return (minimum, average, maximum)
+
+    except Exception:
+        return (0.0, 0.0, 0.0)
 
 
 def sort_data(data) -> List[Tuple[str, float]]:
@@ -49,10 +72,57 @@ def sort_data(data) -> List[Tuple[str, float]]:
     
     @return: A sorted list of tuples containing (crypto name, price)
     """
+    all_data = read_file(data)
+    all_keys = [key for key in all_data.keys()]
+    sorted_data = []
 
-    # TODO: Implement here your solution
-    return None
+    for i in range(0, len(all_keys)):
+        for j in range(0, len(all_keys)):
+            if all_keys[i] < all_keys[j]:
+                temp = all_keys[i]
+                all_keys[i] = all_keys[j]
+                all_keys[j] = temp
 
+    def mergeSort(arr):
+        if len(arr) > 1:
+            mid = len(arr) // 2
+            left = arr[:mid]
+            right = arr[mid:]
+            mergeSort(left)
+            mergeSort(right)
+        
+            i = j = k = 0
+            while i < len(left) and j < len(right):
+                if left[i] < right[j]:
+                    arr[k] = left[i]
+                    i += 1
+                else:
+                    arr[k] = right[j]
+                    j += 1
+                k += 1
+            
+            while i < len(left):
+                arr[k] = left[i]
+                i += 1
+                k += 1
+            
+            while j < len(right):
+                arr[k] = right[j]
+                j += 1
+                k += 1
+        return arr
+    
+    for k in all_keys:
+        #sorted_data.append(k)
+        raw = {int(elem[0]):float(elem[1]) for elem in all_data[k]}
+        sorted_days = mergeSort(list(raw.keys()))
+        for day in sorted_days:
+            price = raw[day]
+            sorted_data.append((k, price))
+    return sorted_data
+        
+    
+print(sort_data("data/dataset_full.txt"))
 
 def get_max_value(data, crypto: str, month: int) -> Tuple[int, float]:
     """
