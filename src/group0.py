@@ -188,10 +188,6 @@ def get_max_value(data, crypto: str, month: int) -> Tuple[int, float]:
 
     except Exception:
         return tuple((-1, -1))
-    
-        
-print(get_max_value("data/dataset_full.txt", "polygon", 5))
-
 
 
 def search(data, value: float, crypto: str) -> Tuple[int, float]:
