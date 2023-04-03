@@ -1,6 +1,7 @@
 # Luiss - Management and Computer Science - Algorithm 2022/2023 
 # Please fill the empty parts with your solution
 from typing import Tuple, List, Dict
+import heapq
 
 def read_file(file_path: str) -> any:
     """
@@ -120,8 +121,6 @@ def sort_data(data) -> List[Tuple[str, float]]:
             sorted_data.append((k, price))
     return sorted_data
         
-    
-print(sort_data("data/dataset_full.txt"))
 
 def get_max_value(data, crypto: str, month: int) -> Tuple[int, float]:
     """
@@ -143,9 +142,56 @@ def get_max_value(data, crypto: str, month: int) -> Tuple[int, float]:
              along with the maximum value for that crypto
     """
 
-    # TODO: Implement here your solution
+    def partition(list, low, high):
+        i = low
+        pivot = list[high]
 
-    return (None, None)
+        for j in range(low, high):
+            if list[j] <= pivot:
+                list[i], list[j] =  list[j], list[i]
+                i += 1
+
+        list[i], list[high] = list[high] ,list[i]
+
+        return i
+        
+
+    def quick_sort(list, low, high):
+        if low < high:
+            partition_index = partition(list, low, high)
+            quick_sort(list, low, partition_index - 1)
+            quick_sort(list, partition_index + 1, high)
+        
+
+    all_data = sort_data(data)
+    dictionary = dict()
+    day = 0
+
+    try:
+        for elem in all_data:
+            if elem[0] == crypto:
+                day += 1
+                if day <= 30 and month == 1 or (month * 30) - 29  <= day <= (month * 30):
+                    dictionary[day] = elem[1]
+
+        keys = list(dictionary.keys())
+
+        #We need an unsorted list of prices because we are getting the day_of_max price by the index of the max price and quicksort modifies the list without considering the keys.
+        prices_unsorted = list(dictionary.values())
+        prices_sorted = list(dictionary.values())
+        quick_sort(prices_sorted, 0, len(prices_sorted) - 1)
+        
+        max_price = prices_sorted[len(prices_sorted) - 1]
+        day_of_max_price = keys[prices_unsorted.index(max_price)]
+
+        return tuple((day_of_max_price, max_price))
+
+    except Exception:
+        return tuple((-1, -1))
+    
+        
+print(get_max_value("data/dataset_full.txt", "polygon", 5))
+
 
 
 def search(data, value: float, crypto: str) -> Tuple[int, float]:
