@@ -1,7 +1,7 @@
 # Luiss - Management and Computer Science - Algorithm 2022/2023 
 # Please fill the empty parts with your solution
 from typing import Tuple, List, Dict
-import heapq
+
 
 def read_file(file_path: str) -> any:
     """
@@ -209,11 +209,63 @@ def search(data, value: float, crypto: str) -> Tuple[int, float]:
     @return: A tuple containing the day on which the cryptocurrency reached the closest price
              and the closest price.
     """
+    all_data = sort_data(data)
+    rearranged_data = dict()
 
-    # TODO: Implement here your solution
+    day = 0
+    for elem in all_data:
+        if elem[0] == crypto:
+            day += 1
+            rearranged_data[elem[1]] = day
+    
+    prices = list(rearranged_data.keys())
+    
+    def partition(list, low, high):
+        i = low
+        pivot = list[high]
+
+        for j in range(low, high):
+            if list[j] <= pivot:
+                list[i], list[j] =  list[j], list[i]
+                i += 1
+
+        list[i], list[high] = list[high] ,list[i]
+
+        return i
+        
+
+    def quick_sort(list, low, high):
+        if low < high:
+            partition_index = partition(list, low, high)
+            quick_sort(list, low, partition_index - 1)
+            quick_sort(list, partition_index + 1, high)
+    
+    quick_sort(prices, 0, len(prices) - 1)
+
+    def binarySearch(data, value):
+        i, j = 0, len(data) - 1
+        closest_index = i
+        while i <= j:
+            mid = i + (j - i) // 2
+            if data[mid] < value:
+                i = mid + 1
+            elif data[mid] > value:
+                j = mid - 1
+            else:
+                closest_index = mid
+                break
+            if abs(data[mid] - value) < abs(data[closest_index] - value):
+                closest_index = mid
+        return closest_index
+    
+    i_closest_price = binarySearch(prices, value)
+    
+
+    return tuple((rearranged_data[prices[i_closest_price]],prices[i_closest_price]))
+    
 
 
-    return (None, None)
+print(search("data/dataset_small.txt", 1.287, "Helium"))
 
 
 def min_correlation_pathways(data,
