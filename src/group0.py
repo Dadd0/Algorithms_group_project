@@ -13,18 +13,16 @@ def read_file(file_path: str) -> any:
     
     @return: A data structure contining the information of the crypto
     """
-    
     with open(file_path, "r") as file:
         dictionary = dict()
         for line in file.readlines():
-            line.split(",")
             element = line.rstrip().split(',')
             if element[0] in dictionary:
                 dictionary[element[0]].append(element[1:])
             else:
                 dictionary[element[0]]=[element[1:]]
         return dictionary
-    
+
 
 def crypto_stats(data, crypto_name: str, interval: Tuple[int, int]) -> Tuple[float, float, float]:
     """
@@ -58,7 +56,7 @@ def crypto_stats(data, crypto_name: str, interval: Tuple[int, int]) -> Tuple[flo
 
     except Exception:
         return (0.0, 0.0, 0.0)
-
+    
 
 def sort_data(data) -> List[Tuple[str, float]]:
     """
@@ -176,7 +174,6 @@ def get_max_value(data, crypto: str, month: int) -> Tuple[int, float]:
 
         keys = list(dictionary.keys())
 
-        #We need an unsorted list of prices because we are getting the day_of_max price by the index of the max price and quicksort modifies the list without considering the keys.
         prices_unsorted = list(dictionary.values())
         prices_sorted = list(dictionary.values())
         quick_sort(prices_sorted, 0, len(prices_sorted) - 1)
@@ -216,7 +213,7 @@ def search(data, value: float, crypto: str) -> Tuple[int, float]:
     for elem in all_data:
         if elem[0] == crypto:
             day += 1
-            rearranged_data[elem[1]] = day
+            rearranged_data[elem[1]] = day  
     
     prices = list(rearranged_data.keys())
     
@@ -259,13 +256,8 @@ def search(data, value: float, crypto: str) -> Tuple[int, float]:
         return closest_index
     
     i_closest_price = binarySearch(prices, value)
-    
 
     return tuple((rearranged_data[prices[i_closest_price]],prices[i_closest_price]))
-    
-
-
-print(search("data/dataset_small.txt", 1.287, "Helium"))
 
 
 def min_correlation_pathways(data,
@@ -286,9 +278,44 @@ def min_correlation_pathways(data,
                
     @return: The minimal correlation pathways tree
     """
-    # TODO: Implement here your solution
-    
-    return None
+    crypto_returns = dict()
+
+    for crypto_name in read_file(data):
+        filtered_data = sorted(read_file(data).get(crypto_name), key=lambda x:int(x[0]))
+        price_a = float(filtered_data[(interval[0]) - 1][1])
+        price_b = float(filtered_data[(interval[1]) - 1][1])
+
+        if price_a != 0:
+            return_crypto_c = (price_b - price_a) / price_a
+        else:
+            return_crypto_c = 1
+
+        crypto_returns[crypto_name] = return_crypto_c
+
+    # Calculate the squared distance between the returns of each pair of cryptos in the given interval
+    distance_score = dict()
+    crypto_names = list(read_file(data).keys())
+    for i in range(len(crypto_names)):
+        for j in range(i+1, len(crypto_names)):
+            crypto1 = crypto_names[i]
+            crypto2 = crypto_names[j]
+            distance = abs(crypto_returns[crypto1] - crypto_returns[crypto2])
+            distance_score[(crypto1, crypto2)] = distance
+
+    #Initializing an empty adjacency list
+    adj_list = {crypto_name: {} for crypto_name in crypto_names}
+
+    #Building the adjacency list
+    threshold = 0.5
+    for (crypto1, crypto2), corr in distance_score.items():
+        if crypto1 != crypto2 and corr <= threshold:
+            adj_list[crypto1][crypto2] = corr
+            adj_list[crypto2][crypto1] = corr
+
+# TEST
+    if crypto in crypto_returns:
+        return adj_list 
+print(min_correlation_pathways("data/dataset_small.txt", "Algorand", (2,25)))
 
 
 def correlated_cryptos_at_lvl_k(data,
