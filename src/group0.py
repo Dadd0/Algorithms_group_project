@@ -40,7 +40,7 @@ def crypto_stats(data, crypto_name: str, interval: Tuple[int, int]) -> Tuple[flo
     
     @return: A tuple that contains the minimum, average, and maximum price values
     """
-    all_data = read_file(data)
+    all_data = data
     filtered_data = []
 
     try:
@@ -71,7 +71,7 @@ def sort_data(data) -> List[Tuple[str, float]]:
     
     @return: A sorted list of tuples containing (crypto name, price)
     """
-    all_data = read_file(data)
+    all_data = data
     all_keys = [key for key in all_data.keys()]
     sorted_data = []
 
@@ -181,10 +181,12 @@ def get_max_value(data, crypto: str, month: int) -> Tuple[int, float]:
         max_price = prices_sorted[len(prices_sorted) - 1]
         day_of_max_price = keys[prices_unsorted.index(max_price)]
 
-        return tuple((day_of_max_price, max_price))
+        return tuple((int(day_of_max_price), float(max_price)))
 
     except Exception:
-        return tuple((-1, -1))
+        return tuple((-1, float(-1)))
+    
+print(get_max_value(read_file("data/dataset_full.txt"), "Algorand", 1))
 
 
 def search(data, value: float, crypto: str) -> Tuple[int, float]:
@@ -315,7 +317,7 @@ def min_correlation_pathways(data,
 # TEST
     if crypto in crypto_returns:
         return adj_list 
-print(min_correlation_pathways("data/dataset_small.txt", "Algorand", (2,25)))
+#print(min_correlation_pathways("data/dataset_small.txt", "Algorand", (2,25)))
 
 
 def correlated_cryptos_at_lvl_k(data,
