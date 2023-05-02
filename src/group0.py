@@ -185,8 +185,6 @@ def get_max_value(data, crypto: str, month: int) -> Tuple[int, float]:
 
     except Exception:
         return tuple((-1, float(-1)))
-    
-print(get_max_value(read_file("data/dataset_full.txt"), "Algorand", 1))
 
 
 def search(data, value: float, crypto: str) -> Tuple[int, float]:
