@@ -278,44 +278,74 @@ def min_correlation_pathways(data,
                
     @return: The minimal correlation pathways tree
     """
-    crypto_returns = dict()
+    def calculate_crypto_returns():
+        
+        crypto_returns = dict()
 
-    for crypto_name in read_file(data):
-        filtered_data = sorted(read_file(data).get(crypto_name), key=lambda x:int(x[0]))
-        price_a = float(filtered_data[(interval[0]) - 1][1])
-        price_b = float(filtered_data[(interval[1]) - 1][1])
+        for crypto_name in data:
+            filtered_data = sorted(data.get(crypto_name), key=lambda x:int(x[0]))
+            price_a = float(filtered_data[(interval[0]) - 1][1])
+            price_b = float(filtered_data[min(interval[1], len(filtered_data) - 1)][1])
 
-        if price_a != 0:
-            return_crypto_c = (price_b - price_a) / price_a
-        else:
-            return_crypto_c = 1
+            if price_a != 0:
+                return_crypto_c = (price_b - price_a) / price_a
+            else:
+                return_crypto_c = 1
 
-        crypto_returns[crypto_name] = return_crypto_c
+            crypto_returns[crypto_name] = return_crypto_c
 
-    # Calculate the squared distance between the returns of each pair of cryptos in the given interval
-    distance_score = dict()
-    crypto_names = list(read_file(data).keys())
-    for i in range(len(crypto_names)):
-        for j in range(i+1, len(crypto_names)):
-            crypto1 = crypto_names[i]
-            crypto2 = crypto_names[j]
-            distance = abs(crypto_returns[crypto1] - crypto_returns[crypto2])
-            distance_score[(crypto1, crypto2)] = distance
+        return crypto_returns
 
-    #Initializing an empty adjacency list
-    adj_list = {crypto_name: {} for crypto_name in crypto_names}
 
-    #Building the adjacency list
-    threshold = 0.5
-    for (crypto1, crypto2), corr in distance_score.items():
-        if crypto1 != crypto2 and corr <= threshold:
+    def calculate_crypto_correlation():
+        correlations = dict()
+
+        for i in range(len(crypto_names)):
+            for j in range(i+1, len(crypto_names)):
+                crypto1 = crypto_names[i]
+                crypto2 = crypto_names[j]
+                distance = abs(crypto_returns[crypto1] - crypto_returns[crypto2])
+                correlations[(crypto1, crypto2)] = distance
+        
+        return correlations
+    
+
+    def build_graph():
+        adj_list = {crypto_name: {} for crypto_name in crypto_names}
+            
+        for (crypto1, crypto2), corr in crypto_correlations.items():
             adj_list[crypto1][crypto2] = corr
             adj_list[crypto2][crypto1] = corr
 
-# TEST
-    if crypto in crypto_returns:
-        return adj_list 
-#print(min_correlation_pathways("data/dataset_small.txt", "Algorand", (2,25)))
+        return adj_list
+    
+
+    def build_mst(input, start):
+        visited = set()
+        nodes = [(start, None, 0)]
+        mst = {}
+    
+        while nodes:
+            curr, prev, weight = sorted(nodes, key=lambda x: x[2])[0]
+            nodes.remove((curr, prev, weight))
+            if curr in visited:
+                continue
+            visited.add(curr)
+            if prev:
+                mst.setdefault(prev, []).append(curr)
+            for neighbor, neighbor_weight in input[curr].items():
+                if neighbor not in visited:
+                    nodes.append((neighbor, curr, neighbor_weight))
+        return mst
+
+
+    crypto_names = list(data.keys())
+    crypto_returns = calculate_crypto_returns()
+    crypto_correlations = calculate_crypto_correlation()
+    graph = build_graph()
+    mst =  build_mst(graph, crypto)
+
+    return mst
 
 
 def correlated_cryptos_at_lvl_k(data,
@@ -336,5 +366,21 @@ def correlated_cryptos_at_lvl_k(data,
                
     @return: A list of cryptocurrencies
     """
-    # TODO: Implement here your solution
-    return None
+
+    min_tree = min_correlation_pathways(data, crypto, interval)
+    
+    def dfs(node: str, current_level: int) -> List[str]:
+        if current_level == level:
+            return [node]
+        
+        correlated_cryptos = []
+        children = min_tree.get(node, [])
+        
+        for child in children:
+            correlated_cryptos.extend(dfs(child, current_level + 1))
+        
+        return correlated_cryptos
+
+    correlated_cryptos = dfs(crypto, 0)
+
+    return min_tree, correlated_cryptos
