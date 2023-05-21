@@ -2,6 +2,35 @@
 # Please fill the empty parts with your solution
 from typing import Tuple, List, Dict
 
+def mergeSort(arr):
+        if len(arr) > 1:
+            mid = len(arr) // 2
+            left = arr[:mid]
+            right = arr[mid:]
+            mergeSort(left)
+            mergeSort(right)
+        
+            i = j = k = 0
+            while i < len(left) and j < len(right):
+                if left[i] < right[j]:
+                    arr[k] = left[i]
+                    i += 1
+                else:
+                    arr[k] = right[j]
+                    j += 1
+                k += 1
+            
+            while i < len(left):
+                arr[k] = left[i]
+                i += 1
+                k += 1
+            
+            while j < len(right):
+                arr[k] = right[j]
+                j += 1
+                k += 1
+        return arr
+
 
 def read_file(file_path: str) -> any:
     """
@@ -48,11 +77,19 @@ def crypto_stats(data, crypto_name: str, interval: Tuple[int, int]) -> Tuple[flo
             if float(values[0]) >= interval[0] and float(values[0]) <= interval[1]:
                 filtered_data.append(float(values[1]))
 
-        minimum = min(filtered_data)
-        maximum = max(filtered_data)
-        average = sum(filtered_data) / len(filtered_data)
-        
-        return (minimum, average, maximum)
+        if filtered_data:
+            minimum = maximum = filtered_data[0]
+            total = filtered_data[0]
+
+            for value in filtered_data[1:]:
+                total += value
+                if value < minimum:
+                    minimum = value
+                if value > maximum:
+                    maximum = value
+
+            average = total / len(filtered_data)
+            return (minimum, average, maximum)
 
     except Exception:
         return (0.0, 0.0, 0.0)
@@ -81,35 +118,6 @@ def sort_data(data) -> List[Tuple[str, float]]:
                 temp = all_keys[i]
                 all_keys[i] = all_keys[j]
                 all_keys[j] = temp
-
-    def mergeSort(arr):
-        if len(arr) > 1:
-            mid = len(arr) // 2
-            left = arr[:mid]
-            right = arr[mid:]
-            mergeSort(left)
-            mergeSort(right)
-        
-            i = j = k = 0
-            while i < len(left) and j < len(right):
-                if left[i] < right[j]:
-                    arr[k] = left[i]
-                    i += 1
-                else:
-                    arr[k] = right[j]
-                    j += 1
-                k += 1
-            
-            while i < len(left):
-                arr[k] = left[i]
-                i += 1
-                k += 1
-            
-            while j < len(right):
-                arr[k] = right[j]
-                j += 1
-                k += 1
-        return arr
     
     for k in all_keys:
         raw = {int(elem[0]):float(elem[1]) for elem in all_data[k]}
@@ -140,27 +148,6 @@ def get_max_value(data, crypto: str, month: int) -> Tuple[int, float]:
              along with the maximum value for that crypto
     """
 
-    def partition(list, low, high):
-        i = low
-        pivot = list[high]
-
-        for j in range(low, high):
-            if list[j] <= pivot:
-                list[i], list[j] =  list[j], list[i]
-                i += 1
-
-        list[i], list[high] = list[high] ,list[i]
-
-        return i
-        
-
-    def quick_sort(list, low, high):
-        if low < high:
-            partition_index = partition(list, low, high)
-            quick_sort(list, low, partition_index - 1)
-            quick_sort(list, partition_index + 1, high)
-        
-
     all_data = sort_data(data)
     dictionary = dict()
     day = 0
@@ -176,7 +163,7 @@ def get_max_value(data, crypto: str, month: int) -> Tuple[int, float]:
 
         prices_unsorted = list(dictionary.values())
         prices_sorted = list(dictionary.values())
-        quick_sort(prices_sorted, 0, len(prices_sorted) - 1)
+        mergeSort(prices_sorted)
         
         max_price = prices_sorted[len(prices_sorted) - 1]
         day_of_max_price = keys[prices_unsorted.index(max_price)]
