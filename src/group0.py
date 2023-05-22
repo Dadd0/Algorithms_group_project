@@ -47,11 +47,11 @@ def read_file(file_path: str) -> any:
         for line in file.readlines():
             element = line.rstrip().split(',')
             if element[0] in dictionary:
-                dictionary[element[0]].append(element[1:])
+                dictionary[element[0]].append(element[1:3])
             else:
-                dictionary[element[0]]=[element[1:]]
+                dictionary[element[0]]=[element[1:3]]
         return dictionary
-
+    
 
 def crypto_stats(data, crypto_name: str, interval: Tuple[int, int]) -> Tuple[float, float, float]:
     """
